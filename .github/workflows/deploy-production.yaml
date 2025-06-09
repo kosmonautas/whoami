@@ -60,5 +60,5 @@ jobs:
             --title "Update production version to ${{ steps.vars.outputs.VERSION }}" \
             --body "Auto-generated PR to update production version to ${{ steps.vars.outputs.VERSION }}" \
             --head "update-production-${{ steps.vars.outputs.VERSION }}" \
-            --head \
+            --base main \
             --repo kosmonautas/whoami-ops
