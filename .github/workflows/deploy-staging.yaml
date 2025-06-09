@@ -27,7 +27,7 @@ jobs:
 
       - name: Update values file for each team
         run: |
-          for team_dir in ops/helm/whoami/values/*; do
+          for team in ops/helm/whoami/values/*; do
             values_file="ops/helm/whoami/values/$team/staging.yaml"
             if [ -f "$values_file" ]; then
               sed -i '' "s/^COMMIT: .*/COMMIT: \"${{ steps.vars.outputs.FULL_SHA }}\"/" "$values_file"
