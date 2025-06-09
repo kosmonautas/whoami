@@ -1,0 +1,64 @@
+name: Deploy production
+
+# TODO:
+# on:
+#   push:
+#     tags:
+#       - 'v*.*.*'
+on:
+  push:
+    branches:
+      - staging
+
+jobs:
+  deploy-production:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout whoami repo
+        uses: actions/checkout@v4
+
+      - name: Set commit and version vars
+        id: vars
+        run: |
+          # echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          echo "VERSION=v0.0.0" >> $GITHUB_OUTPUT
+          echo "FULL_SHA=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Clone ops repo
+        uses: actions/checkout@v4
+        with:
+          repository: kosmonautas/whoami-ops
+          token: ${{ secrets.OPS_REPO_TOKEN }}
+          path: ops
+
+      - name: Update values file for each team
+        run: |
+          for team in ops/helm/whoami/values/*; do
+            values_file="$team/production.yaml"
+            if [ -f "$values_file" ]; then
+              sed -i "s/^COMMIT: .*/COMMIT: \"${{ steps.vars.outputs.FULL_SHA }}\"/" "$values_file"
+              sed -i -E "s/(WHOAMI_NAME: \".*-)[^\"]+/\1${{ steps.vars.outputs.VERSION }}/" "$values_file"
+            fi
+          done
+
+      - name: Commit and push
+        run: |
+          cd ops
+          git status
+          ls -lah
+          git config user.name "bot"
+          git config user.email "bot@github.com"
+          git checkout -b update-production-${{ steps.vars.outputs.VERSION }}
+          git add .
+          git commit -m "Update production to version: ${{ steps.vars.outputs.VERSION }}"
+          git push origin HEAD
+
+      - name: Create pull request
+        run: |
+          gh auth login --with-token < <(echo "${{ secrets.OPS_REPO_TOKEN }}")
+          gh pr create \
+            --title "Update production version to ${{ steps.vars.outputs.VERSION }}" \
+            --body "Auto-generated PR to update production version to ${{ steps.vars.outputs.VERSION }}" \
+            --head "update-production-${{ steps.vars.outputs.VERSION }}" \
+            --head \
+            --repo kosmonautas/whoami-ops
