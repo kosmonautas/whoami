@@ -27,14 +27,11 @@ jobs:
 
       - name: Update values file for each team
         run: |
-          ls -lah ops/helm/whoami/values/*
           for team in ops/helm/whoami/values/*; do
             values_file="$team/staging.yaml"
             if [ -f "$values_file" ]; then
               sed -i "s/^COMMIT: .*/COMMIT: \"${{ steps.vars.outputs.FULL_SHA }}\"/" "$values_file"
               sed -i -E "s/(WHOAMI_NAME: \".*-)[^\"]+/\1${{ steps.vars.outputs.SHORT_SHA }}/" "$values_file"
-            else
-              echo "no exist: $values_file"
             fi
           done
 
@@ -45,7 +42,6 @@ jobs:
           ls -lah
           git config user.name "bot"
           git config user.email "bot@github.com"
-          git checkout -b update-staging-${{ steps.vars.outputs.SHORT_SHA }}
           git add .
           git commit -m "Update staging to version: ${{ steps.vars.outputs.SHORT_SHA }}"
           git push origin HEAD
