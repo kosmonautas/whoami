@@ -15,8 +15,7 @@ jobs:
       - name: Set commit and version vars
         id: vars
         run: |
-          # echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-          echo "VERSION=v0.0.0" >> $GITHUB_OUTPUT
+          echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
           echo "FULL_SHA=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
 
       - name: Clone ops repo
