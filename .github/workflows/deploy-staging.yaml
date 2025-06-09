@@ -27,6 +27,7 @@ jobs:
 
       - name: Update values file for each team
         run: |
+          ls -lah ops/helm/whoami/values/*
           for team in ops/helm/whoami/values/*; do
             values_file="ops/helm/whoami/values/$team/staging.yaml"
             if [ -f "$values_file" ]; then
