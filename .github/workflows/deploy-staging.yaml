@@ -33,6 +33,8 @@ jobs:
             if [ -f "$values_file" ]; then
               sed -i "s/^COMMIT: .*/COMMIT: \"${{ steps.vars.outputs.FULL_SHA }}\"/" "$values_file"
               sed -i -E "s/(WHOAMI_NAME: \".*-)[^\"]+/\1${{ steps.vars.outputs.SHORT_SHA }}/" "$values_file"
+            else
+              echo "no exist: $values_file"
             fi
           done
 
